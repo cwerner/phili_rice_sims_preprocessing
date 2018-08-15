@@ -20,9 +20,9 @@ import xml.etree.cElementTree as ET
 AUTHOR   = 'Christian Werner'
 EMAIL    = 'christian.werner@senckenberg.de'
 DATE     = str(dt.datetime.now())
-DATASET  = 'Vietnam GHG Emissions'
+DATASET  = 'Phillipines GHG Emissions'
 VERSION  = 'v1.0'
-SOURCE   = 'CCAFS'
+SOURCE   = 'BiK-F'
 
 # --------------------------------- D I C T I O N A R I E S --------------------------------------------
 # crude mapping from vegtype to humus type
@@ -123,7 +123,7 @@ class SpeciesParaXML( BaseXML ):
             elif master=='none':
                 self.xml.find('./speciesparameters').append(species)
             else:
-                print 'addSpecies requires keyword master = [create,append,none]; assuming none'
+                print('addSpecies requires keyword master = [create,append,none]; assuming none')
                 self.xml.find('./speciesparameters').append(species)
                 
 
@@ -459,7 +459,7 @@ def calcHydaulicProperties(D):
     try:
         ALPHA = math.e**logAlpha
     except:
-        print D
+        print( D )
     vGn = math.e**logN
     vGm = 1.0 # (1.0 - (1.0/ vGn)) disabled as we do not use texture classes but real fractions
 
