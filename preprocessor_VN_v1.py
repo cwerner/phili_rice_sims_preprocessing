@@ -28,14 +28,13 @@ import xml.dom.minidom as MD
 import xml.etree.cElementTree as ET
 import progressbar
 
-
 import pandas as pd
-from StringIO import StringIO
+from io import StringIO
 
 # ENUMS
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
+    reverse = dict((value, key) for key, value in enums.items())
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
@@ -917,11 +916,10 @@ ___________________________________________
 
     # for transect AU_natt use high-res data
 
-    soil_file  = "data/VN_WISESOIL_%s.nc" % options.sclass
-    ref_file   = "data/VN_MISC4.nc"
-    gdd_file   = "data/VN_gdds.nc"
-
-    climate_dbpath = "clim_pgf2/db/"
+    soil_file = os.environ.get('LDNDC_DATA_SOIL', "data/VN_WISESOIL_%s.nc" % options.sclass)
+    ref_file = os.environ.get('LDNDC_DATA_REF', "data/VN_MISC4.nc")
+    gdd_file = os.environ.get('LDNDC_DATA_GDD', "data/VN_gdds.nc")
+    climate_dbpath = os.environ.get('LDNDC_DATA_CLIM', "clim_pgf2/db/")
     #climate_dbpath = "/Volumes/Drobo/data/global/climate/db/%s/%s" % (options.climarchive, options.cscen)
     #climate_dbpath = "/Volumes/Drobo/data/global/climate/db/%s/%s" % (options.climarchive, options.cscen)
 
