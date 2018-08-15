@@ -973,7 +973,7 @@ ___________________________________________
     Lpids     = []
     Lrids     = []
 
-    for cnt, line in enumerate(open("../gridlist_vietnam64.txt", 'r')):
+    for cnt, line in enumerate(open("data/gridlist_vietnam64.txt", 'r')):
         if cnt > 0:
             s   = line[:-1].split()
             x   = s[0].split("-")
@@ -1064,7 +1064,7 @@ ___________________________________________
     clids = list(set(clids))
 
     # call the main function
-    OUTPATH="../projects/regional/VN_arable"
+    OUTPATH=os.environ.get('LDNDC_OUTPATH', "output")
 
     main(sids, clids, coords, idxs, options, OUTPATH)
 
