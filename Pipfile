@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 numpy = "*"
 "netcdf4" = "*"
+progressbar = "*"
+pandas = "*"
 
 [dev-packages]
 
