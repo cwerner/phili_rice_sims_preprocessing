@@ -9,30 +9,6 @@ import numpy as np
 import xarray as xr
 import zipfile
 
-def wrap360(ds, lon='lon'):
-    """
-    wrap longitude coordinates to 0..360
-
-    Parameters
-    ----------
-    ds : Dataset
-        object with longitude coordinates
-    lon : string
-        name of the longitude ('lon', 'longitude', ...)
-
-    Returns
-    -------
-    wrapped : Dataset
-        Another dataset array wrapped around.
-    """
-
-    # wrap -180..179 to 0..359    
-    ds.coords[lon] = np.mod(ds[lon], 360)
-
-    # sort the data
-    return ds.reindex({ lon : np.sort(ds[lon])})
-
-
 class DownloadETopo1(luigi.Task):
     etopo1_location = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/cell_registered/georeferenced_tiff/ETOPO1_Ice_c_geotiff.zip"
     file_path = "downloads/ETOPO1_Ice_c_geotiff.tif"
@@ -77,7 +53,6 @@ class ResampleETopo1(luigi.contrib.external_program.ExternalProgramTask):
 
     def program_args(self):
         return ["cdo", "-selname,relief", "-remapbil,r4320x2160", self.input()[0].path, self.output().path]
-        #return ["cdo", "-sellonlatbox,-179.99166666666,179.99166666666,-89.9916666666666,89.9916666666666", "-remapbil,r4320x2160", "-selname,relief", self.input()[0].path, self.output().path]
 
     def output(self):
         return luigi.LocalTarget(self.file_path)
@@ -93,7 +68,6 @@ class ReorientETopo1(luigi.contrib.external_program.ExternalProgramTask):
         yield ResampleETopo1(bbox=self.bbox)
 
     def program_args(self):
-        #return ["cdo", "-sellonlatbox,-179.95833333333,180.04166666666666,-90,90", self.input()[0].path, self.output().path]
         return ["cdo", "-sellonlatbox,-180,180,-90,90", self.input()[0].path, self.output().path]
 
     def output(self):
