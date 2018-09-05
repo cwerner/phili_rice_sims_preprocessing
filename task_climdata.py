@@ -2,9 +2,11 @@
 # ===============
 
 import luigi
-
+import gzip
+import os
 import pandas as pd
 import xarray as xr
+from io import StringIO
 
 from general import RasterizeShapefile 
 
@@ -48,7 +50,7 @@ def get_cell_info(data_nc):
     """Extract site info from base netcdf file
     """
     data_nc_stacked = data_nc.stack(cell=['lat','lon'])
-    return data_nc_stacked.where(data_nc_stacked.simmask == 1, drop=True)
+    return data_nc_stacked.where(data_nc_stacked.region == 1, drop=True)
 
 
 class DownsampleClimateData(luigi.Task):
@@ -62,39 +64,44 @@ class DownsampleClimateData(luigi.Task):
     data_nc = luigi.Parameter()
 
     out_file = luigi.Parameter(default="climate.txt")
-    climate_dbpath = luigi.Parameter()
+    climate_dbpath = luigi.Parameter(default='data/climate/db')
 
     syear = luigi.IntParameter(default=None)
     eyear = luigi.IntParameter(default=None) 
 
     path = luigi.Parameter(default='tmp')    
 
-    def run():
+    file_path = 'climate.txt' 
+
+    def run(self):
         YEARS = None
-        if syear is not None and eyear is not None:
-            YEARS = range(syear, eyear+1)
+        if self.syear is not None and self.eyear is not None:
+            YEARS = range(self.syear, self.eyear+1)
 
-        data = get_cell_info(self.data_nc)
+        data = get_cell_info(xr.open_dataset(self.data_nc))
 
-        for c in data.cell:
+
+        for cnt, c in enumerate(data.cell):
             data_cell = data.sel(cell=c)
+            lat, lon = data_cell.cell.item()
+            
             sid = data_cell.cid.values
             climate_id = data_cell.climid.values
-            lat = data_cell.lat.values
-            lon = data_cell.lon.values
+            #lat = data_cell.lat.values
+            #lon = data_cell.lon.values
             elevation = data_cell.elevation.values
             topodiff = data_cell.topodiff.values
 
             if cnt == 0:
-                fout = gzip.open( climate_file_path + '.gz', 'w')
+                fout = gzip.open( self.output().path + '.gz', 'wt')
 
-            climate_dbfile = os.path.join(climate_dbpath, "climate_%08d.txt.gz" % climate_id)
-            climate_lines = gzip.open( climate_dbfile, 'rb' ).readlines()
+            climate_dbfile = os.path.join(self.climate_dbpath, "climate_%08d.txt.gz" % climate_id)
+            climate_lines = gzip.open( climate_dbfile, 'rt').readlines()
             
             # parse climate file and modify temp(s)
             if cnt == 0:
                 # write global section (only once)
-                globalHeader = f'%global\n\t\ttime     = {syear}-1-1/1\n%cuefile = "cuefile.txt"\n\n'
+                globalHeader = f'%global\n\t\ttime     = {self.syear}-1-1/1\n%cuefile = "cuefile.txt"\n\n'
 
                 for lcnt, line in enumerate(climate_lines):
                     if "climate\n" in line:
@@ -128,7 +135,7 @@ class DownsampleClimateData(luigi.Task):
                        f"    #   original climid (0.5deg res):     {climate_id}\n" +
                        f"    #   new id == cid (native res):       {sid}\n" +
                        f"    #   elevation difference to orig [m]: {topodiff}\n" +
-                       f"    #   lapse rate corr. [degC/ 100m]:    {ADIABATICLR}\n" +
+                       f"    #   lapse rate corr. [degC/ 100m]:    {self.ADIABATICLR}\n" +
                        f"    #\n" +
                        f"    # WARNING: tavg & tamp are not corrected (for now)\n")
 
@@ -149,7 +156,7 @@ class DownsampleClimateData(luigi.Task):
             if YEARS:
                 df = df[(df.year >= YEARS[0]) & (df.year <= YEARS[-1])]
 
-            temp_adjust = ADIABATICLR * topodiff * 0.01 
+            temp_adjust = self.ADIABATICLR * topodiff * 0.01 
 
             # adjust temp columns
             if df['tavg'].mean(axis=0) > -99:
@@ -165,3 +172,7 @@ class DownsampleClimateData(luigi.Task):
             fout.write( out )
 
         fout.close()
+    
+    def output(self):
+        return luigi.LocalTarget(self.file_path)  
+
