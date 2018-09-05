@@ -110,12 +110,9 @@ class CreateElevationLayers(luigi.Task):
 
         scale_factor_lon = len(da.lon.values) / len(da_LR.lon.values)
         scale_factor_lat = len(da.lat.values) / len(da_LR.lat.values)
-        print(scale_factor_lat, scale_factor_lon)
 
         scale_factor_lon = int(len(da.lon.values) / len(da_LR.lon.values))
         scale_factor_lat = int(len(da.lat.values) / len(da_LR.lat.values))
-        print(scale_factor_lat, scale_factor_lon)
-
        
         assert scale_factor_lon == scale_factor_lat
         
