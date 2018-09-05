@@ -6,6 +6,7 @@
 from affine import Affine
 import geopandas as gp
 import luigi
+import math
 import numpy as np
 import os
 from rasterio import features
@@ -34,6 +35,25 @@ def transform_from_latlon(lat, lon):
     scale = Affine.scale(lon[1] - lon[0], lat[1] - lat[0])
     return trans * scale
 
+
+def calc_area(lat, pixeldegree):
+    area_km2 = (110.45 * pixeldegree) * (111.1944 * pixeldegree) * math.cos(lat * (math.pi / 180.0))
+    area_ha  = area_km2 * 100
+    area_m2  = area_km2 * 1000000
+
+    # calculate gridcell areas THOMAS
+    # mean radius of the earth (km)
+    radius_Earth = 6367.425
+    lat_upper = lat + pixeldegree / 0.5
+    lat_lower = lat - pixeldegree / 0.5
+
+    h1 = radius_Earth * math.sin( lat_upper * math.pi / 180.0)
+    h2 = radius_Earth * math.sin( lat_lower * math.pi / 180.0)
+
+    area_band   = 2.0 * math.pi * radius_Earth * (h1-h2)  # area of this latitude band
+    area_km2_TH = area_band * (pixeldegree / 360.0)
+
+    return area_ha
 
 # general purpose tasks ---------------------------------------------
 
