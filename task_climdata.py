@@ -71,7 +71,7 @@ class DownsampleClimateData(luigi.Task):
 
     path = luigi.Parameter(default='tmp')    
 
-    file_path = 'climate.txt' 
+    file_path = 'data/climate/climate_HR.txt' 
 
     def run(self):
         YEARS = None
