@@ -1,4 +1,9 @@
 __pycache__
+.python-version
+DATA_LOCATIONS
+*.cfg
+*.zip
+data
 downloads
 original_data
 tmp
