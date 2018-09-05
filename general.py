@@ -55,6 +55,13 @@ def calc_area(lat, pixeldegree):
 
     return area_ha
 
+def add_attributes(da):
+    da['lat'].attrs['long_name'] = 'latitude'
+    da['lat'].attrs['units'] = 'degrees_north'
+    da['lon'].attrs['long_name'] = 'longitude'
+    da['lon'].attrs['units'] = 'degrees_east'
+    return da
+
 # general purpose tasks ---------------------------------------------
 
 class MakeDirectory(luigi.Task):
@@ -98,8 +105,9 @@ class RasterizeShapefile(luigi.Task):
         raster_data = features.rasterize(shapes, out_shape=data.shape, fill=fill,
                                    transform=transform_from_latlon(da.coords['lat'], da.coords['lon']))
 
-        x = xr.DataArray(raster_data, coords=da.coords, dims=('lat', 'lon'), name=self.name)
-        x.to_dataset().to_netcdf(self.output().path, format='NETCDF4_CLASSIC')
+        da = xr.DataArray(raster_data, coords=da.coords, dims=('lat', 'lon'), name=self.name)
+        da = add_attributes(da)
+        da.to_dataset().to_netcdf(self.output().path, format='NETCDF4_CLASSIC')
 
     def output(self):
         return luigi.LocalTarget(self.file_path)

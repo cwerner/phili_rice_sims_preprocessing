@@ -9,6 +9,8 @@ import numpy as np
 import xarray as xr
 import zipfile
 
+from general import add_attributes
+
 class DownloadETopo1(luigi.Task):
     etopo1_location = "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/cell_registered/georeferenced_tiff/ETOPO1_Ice_c_geotiff.zip"
     file_path = "downloads/ETOPO1_Ice_c_geotiff.tif"
@@ -31,12 +33,11 @@ class PatchETopo1(luigi.Task):
         da = xr.open_rasterio(self.input()[0].path).squeeze()
         da = da.rename({'y':'lat'})
         da['lat'].data = da['lat'].data
-        da['lat'].attrs['long_name'] = 'latitude'
-        da['lat'].attrs['units'] = 'degrees_north'
+
         da = da.rename({'x':'lon'})
         da['lon'].data = da['lon'].data
-        da['lon'].attrs['long_name'] = 'longitude'
-        da['lon'].attrs['units'] = 'degrees_east'
+
+        da = add_attriutes(da)
         da.to_dataset(name="relief").to_netcdf(self.output().path)
 
     def output(self):
