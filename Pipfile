@@ -8,8 +8,15 @@ numpy = "*"
 "netcdf4" = "*"
 progressbar = "*"
 pandas = "*"
+luigi = "*"
+xarray = "*"
+rasterio = "*"
+pyproj = {git = "https://github.com/jswhit/pyproj.git"}
+geopandas = "*"
+# ldndctools = {git = "https://gitlab.com/cw_code/ldndctools.git"}
 
 [dev-packages]
+ldndctools = {git = "https://gitlab.com/cw_code/ldndctools.git"}
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"
