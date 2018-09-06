@@ -37,7 +37,8 @@ class PatchETopo1(luigi.Task):
         da = da.rename({'x':'lon'})
         da['lon'].data = da['lon'].data
 
-        da = add_attriutes(da)
+        da = add_attributes(da)
+        
         da.to_dataset(name="relief").to_netcdf(self.output().path)
 
     def output(self):
@@ -84,7 +85,7 @@ class FixGridETopo1(luigi.contrib.external_program.ExternalProgramTask):
         yield ReorientETopo1(bbox=self.bbox)
 
     def program_args(self):
-        return ["cdo", "-setgrid,tmp/mygrid", self.input()[0].path, self.output().path]
+        return ["cdo", "-setgrid,misc/grid.global_hr", self.input()[0].path, self.output().path]
 
     def output(self):
         return luigi.LocalTarget(self.file_path)

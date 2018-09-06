@@ -11,16 +11,14 @@ from task_management import ProcessManagement
 from task_climdata import ExtractClimData
 from task_etopo1 import CreateElevationLayers
 from task_ids import CreateAllBaseLayers
-
 from task_climdata import DownsampleClimateData
+from task_ricearea import ComputeRicePercentage
 
 from luigi.contrib.external_program import ExternalProgramTask
 
 
 LR = 0.5
 HR = 0.08333333
-
-
 BBOX = [116,4,127,22]
 
 
@@ -35,9 +33,11 @@ class CreateMiscFile(luigi.Task):
         #yield ExtractClimData(bbox=[116,4,134,22], syear=1990, eyear=2012)   # get management
         yield CreateElevationLayers(bbox=BBOX)
         yield CreateAllBaseLayers(bbox=BBOX)
+        yield ComputeRicePercentage(bbox=BBOX) 
 
     def run(self):
-        file_names = ['tmp/manamask.nc', 'tmp/base_layers.nc', 'tmp/cids.nc', 'tmp/climids.nc', 'tmp/elevation.nc', 'tmp/manaids.nc']
+        file_names = ['tmp/' + x for x in ['manamask.nc', 'base_layers.nc', 'cids.nc', 'climids.nc', 'elevation.nc', 'manaids.nc', 'RiceArea_HR.nc']]
+        print(file_names)
         files = [xr.open_dataset(x).transpose('lat','lon') for x in file_names]
 
         out = files[0].copy(deep=True)
@@ -48,6 +48,7 @@ class CreateMiscFile(luigi.Task):
             for var in vars:
                 out[var] = xr.DataArray(file[var].values, coords=out.coords).where(out['region'] == 1) #[('lat', out.coords['lat']), ('lon', out.coords['lon'])], dims=['lat', 'lon'])
 
+        out['simmask'] = out['ricemask'] * out['region']
         out.to_netcdf(self.output().path, format='NETCDF4_CLASSIC')
 
     def output(self):
