@@ -53,21 +53,13 @@ class SetupXML( BaseXML ):
             #print 'Using default elevation of 50m'
             elev = "50.0"
 
-        if 'id' in k:
-            theId = "%d" % k['id']
-        else:
-            theId = "0"
-
-        if 'model' in k:
-            theModel = str(k['model'])
-        else:
-            theModel = "mobile"
-
+        theId = "%d" % k['id'] if 'id' in k else "0"
+        theModel = str(k['model']) if 'model' in k else "mobile"
         self.xml = ET.Element( "ldndcsetup" )
         self.xml.append(self.tags['desc'])
 
         setup    = ET.SubElement(self.xml, "setup", id=theId) #, name="na", model=theModel, active="on")
-        
+
         location = ET.SubElement(setup, "location", elevation=elev, latitude=lat, longitude=lon, \
                                                    slope="0", zone="", aspect="")
         topo     = ET.SubElement(setup, "topology", area='10000', x=x, y=y,z=elev )
@@ -79,7 +71,7 @@ class SetupXML( BaseXML ):
         ET.SubElement(models, "model", id="IPCC")
 
         ricefarmer = ET.SubElement(setup, "RiceFarmer", file="%I/regional/PH_arable/PH_arable_ext_awd_hm.rice", id=str(int(k['mana'])))
-        
+
         use =      ET.SubElement(setup, "use")
 
         ET.SubElement(use, "climate", id=str(k['cid']))
